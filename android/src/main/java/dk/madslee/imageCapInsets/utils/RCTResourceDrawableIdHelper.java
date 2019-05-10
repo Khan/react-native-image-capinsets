@@ -23,15 +23,25 @@ public class RCTResourceDrawableIdHelper {
             return 0;
         }
         name = name.toLowerCase().replace("-", "_");
-        if (mResourceDrawableIdMap.containsKey(name)) {
-            return mResourceDrawableIdMap.get(name);
+
+        // name could be a resource id.
+        try {
+            return Integer.parseInt(name);
+        } catch (NumberFormatException e) {
+            // Do nothing.
         }
-        int id = context.getResources().getIdentifier(
-                name,
-                "drawable",
-                context.getPackageName());
-        mResourceDrawableIdMap.put(name, id);
-        return id;
+
+        synchronized (this) {
+            if (mResourceDrawableIdMap.containsKey(name)) {
+                return mResourceDrawableIdMap.get(name);
+            }
+            int id = context.getResources().getIdentifier(
+                    name,
+                    "drawable",
+                    context.getPackageName());
+            mResourceDrawableIdMap.put(name, id);
+            return id;
+        }
     }
 
     public @Nullable Drawable getResourceDrawable(Context context, @Nullable String name) {

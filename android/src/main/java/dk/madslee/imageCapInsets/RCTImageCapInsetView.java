@@ -3,6 +3,7 @@ package dk.madslee.imageCapInsets;
 import android.content.Context;
 import android.graphics.*;
 import android.graphics.drawable.NinePatchDrawable;
+import android.util.Log;
 import android.widget.ImageView;
 import dk.madslee.imageCapInsets.utils.NinePatchBitmapFactory;
 import dk.madslee.imageCapInsets.utils.RCTImageLoaderListener;
@@ -10,6 +11,9 @@ import dk.madslee.imageCapInsets.utils.RCTImageLoaderTask;
 
 
 public class RCTImageCapInsetView extends ImageView {
+    private static final String TAG = RCTImageCapInsetView.class
+            .getSimpleName();
+
     private Rect mCapInsets;
     private String mUri;
 
@@ -30,9 +34,9 @@ public class RCTImageCapInsetView extends ImageView {
     }
 
     public void reload() {
-	if (mUri == null) {
+        if (mUri == null) {
             return;
-	}
+        }
 
         final String key = mUri + "-" + mCapInsets.toShortString();
         final RCTImageCache cache = RCTImageCache.getInstance();
@@ -45,8 +49,12 @@ public class RCTImageCapInsetView extends ImageView {
         RCTImageLoaderTask task = new RCTImageLoaderTask(mUri, getContext(), new RCTImageLoaderListener() {
             @Override
             public void onImageLoaded(Bitmap bitmap) {
+                if (bitmap == null) {
+                    Log.w(TAG, "Cap inset image failed to load! Source: " + mUri);
+                    return;
+                }
+
                 float density = getContext().getResources().getDisplayMetrics().density;
-                
                 int top = Math.round(mCapInsets.top * density);
                 int right = Math.round(bitmap.getWidth() - mCapInsets.right * density);
                 int bottom = Math.round(bitmap.getHeight() - mCapInsets.bottom * density);
